@@ -3,11 +3,11 @@
 /**
  * Module dependencies.
  */
-
-var app = require('../app');
+var uuid = require('uuid');
 var debug = require('debug')('firstback:server');
 var http = require('http');
 var WebSocket = require('ws');
+var app = require('../app');
 
 /**
  * Get port from environment and store in Express.
@@ -38,18 +38,20 @@ const wss = new WebSocket.Server({ server });
 
 wss.on('connection', function connection(ws) {
   console.log('a new client connected WS')
-  ws.send('Welcome, new Client!')
 
   ws.on('message', function message(data, isBinary) {
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
-        client.send(data, { binary: isBinary });
+        const preparedData = JSON.stringify({
+          id: uuid.v4(),
+          ...JSON.parse(data)
+        });
+        client.send(
+          preparedData, { binary: isBinary });
       }
     });
   });
 });
-
-
 
 function normalizePort(val) {
   var port = parseInt(val, 10);
