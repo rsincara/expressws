@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('firstback:server');
 var http = require('http');
+var WebSocket = require('ws');
 
 /**
  * Get port from environment and store in Express.
@@ -32,6 +33,23 @@ server.on('listening', onListening);
 /**
  * Normalize a port into a number, string, or false.
  */
+
+const wss = new WebSocket.Server({ server });
+
+wss.on('connection', function connection(ws) {
+  console.log('a new client connected WS')
+  ws.send('Welcome, new Client!')
+
+  ws.on('message', function message(data, isBinary) {
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(data, { binary: isBinary });
+      }
+    });
+  });
+});
+
+
 
 function normalizePort(val) {
   var port = parseInt(val, 10);
